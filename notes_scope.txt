@@ -1,0 +1,6 @@
+PII masked:
+- PERSON (NER → [PERSON_REDACTED])
+- LOC (NER → [LOC_REDACTED])
+- EMAIL (regex → [EMAIL_REDACTED])
+- PHONE (regex → [PHONE_REDACTED])
+- SSN (regex → [SSN_REDACTED])

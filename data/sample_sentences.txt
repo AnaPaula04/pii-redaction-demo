@@ -1,0 +1,17 @@
+
+My name is Ana McCullagh and my phone number is (312) 555-0199.
+Please email me at ana.mccullagh@example.com by Friday.
+Kevin lives in Quebec, Canada.
+SSN: 123-45-6789 should never be shared in plain text.
+Meet me at 1200 N State St, Chicago, IL.
+
+Contact: 3125550199 or (312)555.0199
+Work email: ana+mccullagh@sub.example.co.uk
+SSN variant: 123456789
+Address: 77 Massachusetts Ave, Cambridge, MA 02139
+ORG/LOC mix: Amazon opened a center in Austin, Texas.
+Contact: 3125550199 or (312)555.0199
+Work email: ana+mccullagh@sub.example.co.uk
+SSN variant: 123456789
+Address: 77 Massachusetts Ave, Cambridge, MA 02139
+ORG/LOC mix: Amazon opened a center in Austin, Texas.

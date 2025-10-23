@@ -1,0 +1,1 @@
+Model: dslim/bert-base-NER (Hugging Face). Used via transformers pipeline with aggregation_strategy='simple'. Masks PERSON+LOC in a single right-to-left pass, then regex masks EMAIL/PHONE/SSN. Outputs: entities_report.jsonl + redacted_output.txt.
