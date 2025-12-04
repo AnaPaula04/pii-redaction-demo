@@ -54,6 +54,65 @@ def should_filter_location(entity_text, filter_streets):
     
     return False
 
+
+
+# ---------------- Title detection ----------------
+COMMON_TITLES = {
+    'dr', 'dr.', 'doctor',
+    'mr', 'mr.', 'mister',
+    'ms', 'ms.', 
+    'mrs', 'mrs.', 'missus',
+    'miss',
+    'prof', 'prof.', 'professor',
+    'rev', 'rev.', 'reverend',
+    'hon', 'hon.', 'honorable',
+    'sen', 'sen.', 'senator',
+    'rep', 'rep.', 'representative',
+    'capt', 'capt.', 'captain',
+    'lt', 'lt.', 'lieutenant',
+    'sgt', 'sgt.', 'sergeant',
+    'gen', 'gen.', 'general'
+}
+
+def detect_titles_and_names(text: str, ents: list) -> list:
+    """
+    Find patterns like 'Dr. Washington' and add them as PERSON entities
+    if they weren't already detected by NER.
+    Returns enhanced entity list with title-based detections.
+    """
+    import re
+    
+    # Pattern: Title followed by capitalized word(s)
+    title_pattern = r'\b(' + '|'.join(re.escape(t) for t in COMMON_TITLES) + r')\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b'
+    
+    enhanced_ents = list(ents)  # Copy existing entities
+    
+    for match in re.finditer(title_pattern, text, re.IGNORECASE):
+        name_start = match.start(2)  # Start of the name (after title)
+        name_end = match.end(2)      # End of the name
+        
+        # Check if this span is already detected as PERSON
+        already_detected = False
+        for e in ents:
+            if e.get('entity_group') == 'PER':
+                e_start, e_end = e.get('start', -1), e.get('end', -1)
+                # If there's overlap with existing PERSON entity, skip
+                if not (name_end <= e_start or name_start >= e_end):
+                    already_detected = True
+                    break
+        
+        if not already_detected:
+            # Add new entity for the name part (not the title)
+            enhanced_ents.append({
+                'entity_group': 'PER',
+                'start': name_start,
+                'end': name_end,
+                'word': text[name_start:name_end],
+                'score': 0.95  # High confidence for title-based detection
+            })
+    
+    return enhanced_ents
+
 # ---------------- Helpers ----------------
 def preprocess_text(text: str) -> str:
     text = unicodedata.normalize("NFC", text)
@@ -159,6 +218,7 @@ def main():
 
             s = preprocess_text(s)
             ents = nlp(s)
+            ents = detect_titles_and_names(s, ents)
             ents_f = clean_and_filter_ents(ents, args.min_score)
             rep.write(json.dumps({"text": s, "entities": ents_f}, ensure_ascii=False) + "\n")
 
