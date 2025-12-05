@@ -239,5 +239,5 @@ This web interface uses **my pii_redact_v3.py functions** with an interactive St
 
 **Model:** dslim/bert-base-NER (BERT fine-tuned on CoNLL-2003)
 
-**Created by:** Ana McCullagh | **Course:** CS314 Individualized Study | **Professor:** Manar Mohaisen
+**Created by:** Ana McCullagh | **Course:** CS314 Individualized Study | **Professor:** Dr.Manar Mohaisen
 """)
