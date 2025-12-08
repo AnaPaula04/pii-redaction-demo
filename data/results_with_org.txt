@@ -1,8 +1,8 @@
-Dr. [PERSON_REDACTED] in [LOC_REDACTED] at the [LOC_REDACTED].
+Dr. Washington works in [LOC_REDACTED] at the [LOC_REDACTED].
 Call 911 for emergencies or dial 411 for information.
 My email is not-an-email@test or email@incomplete.
-The year 1990 is not the same as ZIP code [ZIP_REDACTED].
-Patient ID [ZIP_REDACTED] is different from SSN [SSN_REDACTED].
-Apple released a new iPhone in [LOC_REDACTED], [LOC_REDACTED].
+The year 1990 is not the same as ZIP code 60601.
+Patient ID 12345 is different from SSN [SSN_REDACTED].
+[ORG_REDACTED] released a new iPhone in [LOC_REDACTED], [LOC_REDACTED].
 Java is a programming language and also an island in [LOC_REDACTED].
 The [LOC_REDACTED] river flows through [LOC_REDACTED], unlike [LOC_REDACTED] the company.

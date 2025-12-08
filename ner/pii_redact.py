@@ -1,27 +1,28 @@
 #!/usr/bin/env python3
 """
-PII Redaction Demo: NER (Hugging Face) + Regex masks
+PII Redaction Demo v2: NER (Hugging Face) + Regex masks + Filtering logic
 Usage:
-    python -W ignore ner/pii_redact.py data/sample_sentences.txt
+  python -W ignore ner/pii_redact.py data/sample_sentences.txt [--min-score 0.85] [--mask-org] [--mask-zip]
 
-Outputs:
-    - data/redacted_output.txt
-    - data/entities_report.jsonl
+What’s new in v2 (Week 6):
+- Confidence filtering: ignore NER entities below --min-score (default: 0.80)
+- Optional ORG masking: add --mask-org to redact organizations
+- Optional ZIP masking: add --mask-zip to redact U.S. ZIP codes
 """
-import sys, re, json, pathlib, unicodedata
+
+import sys, re, json, pathlib, unicodedata, argparse
 from collections import Counter
 from transformers import pipeline
 
 # ---------------- Regex patterns ----------------
-# Email: support plus signs and subdomains
 EMAIL_RE = re.compile(r'[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}')
-# SSN with dashes: 123-45-6789
 SSN_RE   = re.compile(r'\b\d{3}-\d{2}-\d{4}\b')
-# US phone: (312) 555-0199, 312-555-0199, 312 555 0199, +1 312 555 0199, 312.555.0199
+# Phones like: (312) 555-0199, 312-555-0199, 312 555 0199, +1 312 555 0199, 312.555.0199
 PHONE_RE = re.compile(r'(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]*)\d{3}[\s.-]?\d{4}(?!\d)')
-# Bare 9-digit SSN (we’ll use this only if the line mentions "SSN")
+# Bare 9-digit SSN (only applied when the line mentions "SSN")
 SSN_BARE_RE = re.compile(r'(?<!\d)\d{9}(?!\d)')
-
+# U.S. ZIP: 02139 or 02139-4307 (optional, via --mask-zip)
+ZIP_RE = re.compile(r'\b\d{5}(?:-\d{4})?\b')
 
 # ---------------- Helpers ----------------
 def preprocess_text(text: str) -> str:
@@ -30,43 +31,48 @@ def preprocess_text(text: str) -> str:
     text = " ".join(text.split())
     return text
 
-from collections import Counter
-
-def mask_regex(text: str):
+def mask_regex(text: str, use_zip: bool):
     counts = Counter()
-
-    # Email
-    text, c = EMAIL_RE.subn("[EMAIL_REDACTED]", text); counts["EMAIL"] += c # SSN with dashes
-    text, c = SSN_RE.subn("[SSN_REDACTED]", text);     counts["SSN"]   += c # Phone
-    text, c = PHONE_RE.subn("[PHONE_REDACTED]", text); counts["PHONE"] += c # Bare 9-digit SSN — apply only if the line hints it's an SSN (reduces false positives vs. any 9-digit number)
-    
+    text, c = EMAIL_RE.subn("[EMAIL_REDACTED]", text); counts["EMAIL"] += c
+    text, c = SSN_RE.subn("[SSN_REDACTED]", text);     counts["SSN"]   += c
+    text, c = PHONE_RE.subn("[PHONE_REDACTED]", text); counts["PHONE"] += c
+    # Bare SSN only if the line says "SSN"
     if re.search(r'(?i)\bSSN\b', text):
         text, c = SSN_BARE_RE.subn("[SSN_REDACTED]", text); counts["SSN"] += c
-
+    # Optional ZIP
+    if use_zip:
+        text, c = ZIP_RE.subn("[ZIP_REDACTED]", text); counts["ZIP"] += c
     return text, counts
 
-
-def clean_ents_for_json(ents):
+def clean_and_filter_ents(ents, min_score: float):
+    """Cast to plain Python types and FILTER by score >= min_score."""
     cleaned = []
     for e in ents:
         e2 = dict(e)
-        if "score" in e2:
-            try: e2["score"] = float(e2["score"])
-            except: pass
+        # score
+        sc = e2.get("score", 0.0)
+        try:
+            sc = float(sc)
+        except:
+            sc = 0.0
+        e2["score"] = sc
+        # spans
         for k in ("start","end"):
             if k in e2:
                 try: e2[k] = int(e2[k])
                 except: pass
+        # group => str
         if "entity_group" in e2 and not isinstance(e2["entity_group"], str):
-            try: e2["entity_group"] = str(e2["entity_group"])
-            except: pass
-        cleaned.append(e2)
+            e2["entity_group"] = str(e2["entity_group"])
+        # filter by confidence
+        if sc >= min_score:
+            cleaned.append(e2)
     return cleaned
 
 def mask_ner_multi(text: str, ents, group_to_token: dict):
     """
-    Replace all requested NER groups in a single right->left pass on the ORIGINAL text.
-    Example: {"PER": "[PERSON_REDACTED]", "LOC": "[LOC_REDACTED]"}
+    Replace requested NER groups in a single right->left pass on the ORIGINAL text.
+    Example group_to_token: {"PER": "[PERSON_REDACTED]", "LOC": "[LOC_REDACTED]", "ORG": "[ORG_REDACTED]"}
     Returns (masked_text, counts_counter)
     """
     counts = Counter()
@@ -79,12 +85,17 @@ def mask_ner_multi(text: str, ents, group_to_token: dict):
     return text, counts
 
 # ---------------- Main ----------------
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python -W ignore ner/pii_redact.py data/sample_sentences.txt")
-        sys.exit(1)
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("input_file", help="Path to input .txt (one sentence per line)")
+    ap.add_argument("--min-score", type=float, default=0.80, help="Minimum NER confidence to mask (default: 0.80)")
+    ap.add_argument("--mask-org", action="store_true", help="Also mask organizations (ORG)")
+    ap.add_argument("--mask-zip", action="store_true", help="Also mask U.S. ZIP codes")
+    return ap.parse_args()
 
-    infile = pathlib.Path(sys.argv[1])
+def main():
+    args = parse_args()
+    infile = pathlib.Path(args.input_file)
     if not infile.exists():
         print(f"Input file not found: {infile}")
         sys.exit(1)
@@ -92,7 +103,7 @@ def main():
     out_redacted = infile.parent / "redacted_output.txt"
     out_entities = infile.parent / "entities_report.jsonl"
 
-    print("Loading NER model (dslim/bert-base-NER)...")
+    print(f"Loading NER model (dslim/bert-base-NER) with min-score={args.min_score}...")
     nlp = pipeline("ner", model="dslim/bert-base-NER", aggregation_strategy="simple")
 
     totals = Counter()
@@ -106,16 +117,21 @@ def main():
 
             s = preprocess_text(s)
             ents = nlp(s)
-            ents_clean = clean_ents_for_json(ents)
-            rep.write(json.dumps({"text": s, "entities": ents_clean}, ensure_ascii=False) + "\n")
+            ents_f = clean_and_filter_ents(ents, args.min_score)
+            rep.write(json.dumps({"text": s, "entities": ents_f}, ensure_ascii=False) + "\n")
 
-            # 1) NER masking for PERSON + LOC in one pass on ORIGINAL s
-            masked, ner_counts = mask_ner_multi(s, ents_clean, {"PER": "[PERSON_REDACTED]", "LOC": "[LOC_REDACTED]"})
+            # 1) NER masking in one pass (PER, LOC, optionally ORG)
+            groups = {"PER": "[PERSON_REDACTED]", "LOC": "[LOC_REDACTED]"}
+            if args.mask_org:
+                groups["ORG"] = "[ORG_REDACTED]"
+            masked, ner_counts = mask_ner_multi(s, ents_f, groups)
+            # Map PER -> PERSON in totals
             totals["PERSON"] += ner_counts.get("PER", 0)
             totals["LOC"]    += ner_counts.get("LOC", 0)
+            totals["ORG"]    += ner_counts.get("ORG", 0)
 
-            # 2) Regex masking afterward
-            masked, rx_counts = mask_regex(masked)
+            # 2) Regex masks afterward (EMAIL/PHONE/SSN and optional ZIP)
+            masked, rx_counts = mask_regex(masked, use_zip=args.mask_zip)
             totals.update(rx_counts)
 
             redacted_lines.append(masked)
@@ -127,7 +143,7 @@ def main():
     print(f"- Entities report: {out_entities}")
     print(f"- Redacted text : {out_redacted}")
     print("\nSummary (masked counts):")
-    for k in ("PERSON","LOC","EMAIL","PHONE","SSN"):
+    for k in ("PERSON","LOC","ORG","EMAIL","PHONE","SSN","ZIP"):
         if totals[k]:
             print(f"  {k:7s}: {totals[k]}")
     if not any(totals.values()):
@@ -135,4 +151,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

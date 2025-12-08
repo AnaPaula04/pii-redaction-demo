@@ -1,0 +1,11 @@
+Loading NER model (dslim/bert-base-NER) with min-score=0.8...
+
+=== Done ===
+- Entities report: data/entities_report.jsonl
+- Redacted text : data/redacted_output.txt
+
+Summary (masked counts):
+  PERSON : 1
+  LOC    : 8
+  SSN    : 1
+  ZIP    : 2

@@ -55,4 +55,17 @@ I can always edit that file to try other examples.
 - If I hit SSL/timeout issues behind a network, try again or use a different network.
 - Keep my virtualenv **activated** while working (`source .venv/bin/activate`).
 
+cat > README.md <<'MD'
+# PII Redaction Demo (NER + Regex)
+
+- **Model:** `dslim/bert-base-NER` via `transformers.pipeline("ner", aggregation_strategy="simple")`
+- **Masks via NER:** PERSON → `[PERSON_REDACTED]`, LOC → `[LOC_REDACTED]`
+- **Masks via regex:** EMAIL, PHONE, SSN (with- and without-dashes when "SSN" present)
+- **Flow:** single right-to-left pass for NER (keeps indices stable), then regex
+- **Outputs:** 
+  - `data/entities_report.jsonl` (entities per line) 
+  - `data/redacted_output.txt` (final masked text)
+- **Run:** `python -W ignore ner/pii_redact.py data/sample_sentences.txt`
+MD
+
 

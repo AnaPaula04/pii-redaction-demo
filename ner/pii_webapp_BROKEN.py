@@ -93,21 +93,26 @@ with col1:
     st.subheader("📝 Input Text")
     
     # Example button
-    if st.button("📄 Load Example"):
-        st.session_state.user_text = """My name is Ana McCullagh and my phone number is (312) 555-0199.
+    example_text = """My name is Ana McCullagh and my phone number is (312) 555-0199.
 Please email me at ana.mccullagh@example.com by Friday.
 I work at Google in Chicago, IL 60601.
 My SSN is 123-45-6789.
 Meet me at 1200 N State St, Chicago, IL."""
+
+    if st.button("📄 Load Example"):
+        st.session_state.example_to_load = example_text
         st.rerun()
+
+    # Get the value to display
+    initial_value = st.session_state.pop('example_to_load', '')
     
     # Text input
     user_text = st.text_area(
         "Enter or paste your text below:",
-        value=st.session_state.user_text,
+        value=initial_value,
         height=300,
         placeholder="Type or paste text here to detect PII...",
-        key="text_input"
+       
     )
     
     # Update session state

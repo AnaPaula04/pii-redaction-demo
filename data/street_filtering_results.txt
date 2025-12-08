@@ -1,0 +1,41 @@
+Street Name Filtering Test Results
+===================================
+
+PROBLEM: 
+In v2, "State St" was over-masked:
+Input:  "Meet me at 1200 N State St, Chicago, IL"
+Output: "Meet me at 1200 N [LOC_REDACTED], [LOC_REDACTED], [LOC_REDACTED]"
+
+SOLUTION:
+Added --filter-streets flag in v3 to filter common street terms.
+
+Common street words filtered:
+- street, st, avenue, ave, road, rd
+- boulevard, blvd, lane, ln, drive, dr
+- way, court, ct, place, pl, circle, cir
+- parkway, pkwy, highway, hwy
+
+RESULT WITH --filter-streets:
+Input:  "Meet me at 1200 N State St, Chicago, IL"
+Output: "Meet me at 1200 N State St, [LOC_REDACTED], [LOC_REDACTED]"
+
+IMPROVEMENT:
+✅ "State St" no longer masked (more readable)
+✅ "Chicago" still masked (correct - city is location)
+✅ "IL" still masked (correct - state is location)
+
+IMPACT:
+- Reduces false positives for street names
+- Improves readability while maintaining privacy
+- User can choose: use flag for better readability, or don't use it for maximum privacy
+
+RECOMMENDATION:
+Use --filter-streets when:
+- Addresses are common in your data
+- Readability is important
+- Full street addresses aren't considered PII
+
+Don't use --filter-streets when:
+- Maximum privacy is needed
+- Even street names should be hidden
+- Dealing with sensitive location data

@@ -1,0 +1,15 @@
+My name is [PERSON_REDACTED] and my phone number is [PHONE_REDACTED].
+Please email me at [EMAIL_REDACTED] by Friday.
+[PERSON_REDACTED] lives in [LOC_REDACTED], [LOC_REDACTED].
+SSN: [SSN_REDACTED] should never be shared in plain text.
+Meet me at 1200 N State St, [LOC_REDACTED], [LOC_REDACTED].
+Contact: [PHONE_REDACTED] or [PHONE_REDACTED]
+Work email: [EMAIL_REDACTED]
+SSN variant: [SSN_REDACTED]
+Address: 77 Massachusetts Ave, [LOC_REDACTED], [LOC_REDACTED] 02139
+ORG/LOC mix: Amazon opened a center in [LOC_REDACTED], [LOC_REDACTED].
+Contact: [PHONE_REDACTED] or [PHONE_REDACTED]
+Work email: [EMAIL_REDACTED]
+SSN variant: [SSN_REDACTED]
+Address: 77 Massachusetts Ave, [LOC_REDACTED], [LOC_REDACTED] 02139
+ORG/LOC mix: Amazon opened a center in [LOC_REDACTED], [LOC_REDACTED].
