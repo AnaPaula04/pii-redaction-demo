@@ -1,7 +1,7 @@
 import streamlit as st
 from transformers import pipeline
 
-# 🟢 IMPORTS: Connecting to your logic
+# IMPORTS: Connecting to my logic
 from pii_redact_v3 import (
     preprocess_text, 
     mask_regex, 
@@ -65,7 +65,6 @@ col_input, col_output = st.columns(2)
 with col_input:
     st.subheader("📝 Input Text")
     
-    # Simple Text Area (No Keys, No State = No Bugs)
     user_input = st.text_area(
         "Enter or paste your text below:",
         height=250,
@@ -117,7 +116,7 @@ with col_output:
                         scores = [e['score'] for e in filtered_entities if 'score' in e]
                         if scores:
                             avg = sum(scores) / len(scores)
-                            st.markdown("**Confidence:**")
+                            st.markdown("**📈 Confidence Scores:**")
                             st.write(f"- Avg: `{avg:.3f}`")
                             st.write(f"- Max: `{max(scores):.3f}`")
             else:
