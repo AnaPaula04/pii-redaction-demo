@@ -136,7 +136,6 @@ python ner/pii_redact_v3.py input.txt --mask-org --mask-zip --filter-streets --m
 
 ## 📊 **Example**
 
-<<<<<<< HEAD
 cat > README.md <<'MD'
 # PII Redaction Demo (NER + Regex)
 
@@ -227,7 +226,9 @@ pii-redaction-demo/
 │   ├── test_edge_cases.txt      # Edge case test data
 │   ├── redacted_output.txt      # Output file (generated)
 │   └── entities_report.jsonl    # Detailed report (generated)
-├── requirements.txt             # Python dependencies
+├──requirements.txt              # Python dependencies
+├── pii_redact_v3.py             # Main detection script (CLI)
+├── pii_webapp.py                # Streamlit web interface            
 └── README.md                    # This file
 ```
 
@@ -318,7 +319,7 @@ pip install sentencepiece safetensors
 - **BERT Model:** [dslim/bert-base-NER](https://huggingface.co/dslim/bert-base-NER)
 - **Transformers Library:** [Hugging Face](https://huggingface.co/docs/transformers)
 - **Streamlit:** [Streamlit Docs](https://docs.streamlit.io)
-- **Original BERT Paper:** Devlin et al. (2019) - [ArXiv](https://arxiv.org/abs/1810.04805)
+- **Original BERT Paper:** Devlin et al. (2019) - [aclanthology](https://aclanthology.org/N19-1423.pdf)
 
 ---
 
@@ -328,7 +329,7 @@ pip install sentencepiece safetensors
 - Course: CS314 Individualized Study
 - Instructor: Dr. Manar Mohaisen
 - Institution: Northeastern Illinois University
-- Project Duration: September 17 - December 4, 2025
+- Project Duration: September 17 - December 10, 2025
 
 ---
 
